@@ -1,0 +1,20 @@
+{
+	"osd_html": "example.html",
+	"position": {
+		"x": {"relative": true, "offset": -800},
+		"y": {"relative": true, "percent": 80}
+	},
+	"width": 800,
+	"height": 160,
+	"functions": {
+		"button_home": {"method": "write_file", "filename": "exit_session.request"},
+		"button_add_session": {"method": "write_file", "filename": "new_session.request"}
+	},
+	"write_file": {
+		"path": "./"
+	},
+	"startup_functions": {
+		"unhide_home_button": { "condition": "check_current_user", "user": "username", "action": "sendIPC", "ipc_data": { "event": "show_element", "data": "button_home" }},
+		"unhide_add_session_button": { "condition": "check_current_user", "user": "username", "action": "sendIPC", "ipc_data": { "event": "show_element", "data": "button_add_session" }}
+	}
+}

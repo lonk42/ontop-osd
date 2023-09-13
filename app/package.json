@@ -1,11 +1,14 @@
 {
-  "name": "osdot",
-  "version": "0.0.1",
+  "name": "ontop-osd",
+  "version": "1.0.0",
   "description": "An always ontop OSD",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron main.js"
   },
-  "author": "Lonk",
-  "license": "GPL-3.0-or-later"
+  "author": "OnTheLink",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "electron": "^26.0.0"
+  }
 }

@@ -1,0 +1,13 @@
+[Unit]
+Description=OnTop OSD
+After=sddm.service
+
+[Service]
+Type=simple
+User=sddm
+Group=sddm
+ExecStartPre=/bin/sleep 2
+ExecStart=/usr/lib/ontop-osd/ontop-osd
+
+[Install]
+WantedBy=sddm.service
