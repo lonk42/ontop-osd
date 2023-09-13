@@ -2,6 +2,8 @@
 
 An Electron based overlay for Linux desktops aimed to be modular and used in kiosk contexts.
 
+![Example popout OSD](examples/screenshot.png)
+
 ## Usage
 
 OnTop OSD is designed to be used with your own HTML/CSS/Javascript stack, basic examples exploring currently implemented options can be found in `examples/`.
