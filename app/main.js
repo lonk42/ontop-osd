@@ -1,18 +1,17 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const os = require ('os');
 
 app.whenReady().then(() => {
 
   // Get screen dimmensions for positioning
-  const { screen } = require('electron')
-  const screen_dimmensions  = screen.getPrimaryDisplay().workAreaSize
+  screen_dimensions = screen.getPrimaryDisplay().workAreaSize;
 
   // Require argument on which html to use
-  config_file_path = app.commandLine.hasSwitch("config") && app.commandLine.getSwitchValue("config") != "" ? app.commandLine.getSwitchValue("config") : false
+  config_file_path = app.commandLine.hasSwitch("config") && app.commandLine.getSwitchValue("config") != "" ? app.commandLine.getSwitchValue("config") : false;
   if (! config_file_path) {
     console.log("Usage: " + app.getName() + ' --config=""');
     process.exit(-1);
-    //config_file_path = "config.json"
+    //config_file_path = "../examples/example.config.json"
   }
 
   // Read the config file
@@ -44,12 +43,16 @@ app.whenReady().then(() => {
 
         break;
 
+      // Quit closes the electron application itself
+      case 'quit':
+        process.exit(-1)
+
     }
 
   });
 
   // Spawn the app
-  createWindow(screen_dimmensions, app_config);
+  createWindow(screen_dimensions, app_config);
 
   app.on('activate', () => {if (BrowserWindow.getAllWindows().length === 0) {createWindow();}});
 
@@ -57,10 +60,10 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {if (process.platform !== 'darwin') {app.quit();}});
 
-const createWindow = (screen_dimmensions, app_config) => {
+const createWindow = (screen_dimensions, app_config) => {
 
-  // Base window dimmensions, some of these will be overriden from config
-  browser_window_properties = {
+  // Base window dimensions, some of these will be overriden from config
+  let browser_window_property_defaults = {
     width: 500,
     height: 500,
     y: 0,
@@ -78,55 +81,13 @@ const createWindow = (screen_dimmensions, app_config) => {
     }
   }
 
-  // Adjust any values if specified
-  if (! app_config.position) {
-    console.log("WARNING: 'position' missing in config, using defaults..");
-
-  // Calculate dimmensions
+  // Set the window dimensions and position if defined
+  let browser_window_properties = browser_window_property_defaults;
+  if (! app_config.dimensions) {
+    console.log("WARNING: 'position' missing in config, assuming defaults..");
   } else {
-
-    // X axis
-    if (app_config.position.x) {
-      x_offset = 0;
-
-      // Relative reference off the screen width
-      if (app_config.position.x.relative) {
-        x_offset = screen_dimmensions.width;
-      }
-
-      // Positioning can either be a % of the offset or an absolute from it
-      if (app_config.position.x.percent) {
-        // We will subtract the width of the window to have it relative to the left
-        browser_window_properties.x = (parseInt(x_offset) * (parseFloat(app_config.position.x.percent) / 100)) - parseFloat(app_config.width);
-      } else if (app_config.position.x.offset) {
-        browser_window_properties.x = parseInt(x_offset) + parseInt(app_config.position.x.offset);
-      }
-
-    }
-
-    // Y axis
-    if (app_config.position.y) {
-      y_offset = 0;
-
-      // Relative reference off the screen height
-      if (app_config.position.y.relative) {
-        y_offset = screen_dimmensions.height;
-      }
-
-      // Positioning can either be a % of the offset or an absolute from it
-      if (app_config.position.y.percent) {
-        browser_window_properties.y = parseInt(y_offset) * (parseFloat(app_config.position.y.percent) / 100);
-      } else if (app_config.position.y.offset) {
-        browser_window_properties.y = parseInt(y_offset) + parseInt(app_config.position.y.offset);
-      }
-
-    }
-
+    browser_window_properties = {...browser_window_property_defaults, ...TranslateScreenDimensions(app_config.dimensions)}
   }
-
-  // Set the size
-  browser_window_properties.width = app_config.width ? app_config.width : browser_window_properties.width
-  browser_window_properties.height = app_config.height ? app_config.height : browser_window_properties.height
 
   // Create the window
   const win = new BrowserWindow(browser_window_properties);
@@ -135,6 +96,12 @@ const createWindow = (screen_dimmensions, app_config) => {
   // Load the defined URL
   win.loadFile(app_config.osd_html);
   win.setBackgroundColor('#00ffffff');
+  
+  // Handle IPC "changeRegion" to adjust the window size
+  // We need to do this to avoid "unclickable" invisible space on the screen
+  ipcMain.on('changeRegion', function(event, data) {
+    win.setBounds(TranslateScreenDimensions(data.data));
+  });
 
   win.webContents.once('did-finish-load', () => {
 
@@ -172,3 +139,69 @@ const createWindow = (screen_dimmensions, app_config) => {
   });
 
 };
+
+const TranslateScreenDimensions = (dimensions) => {
+  screen_dimensions  = screen.getPrimaryDisplay().workArea;
+  var new_dimensions = {};
+
+  // Some values have extra logic, resolve those and map anything else directly to a new object
+  for (const dimension in dimensions) {
+    switch (dimension) {
+
+      // X axis
+      case 'x':
+
+        // We always want to reference from the primary displays location
+        x_offset = screen_dimensions.x;
+
+        // If defined also reference relative to the screen width
+        if (dimensions.x.relative) {
+          x_offset += screen_dimensions.width;
+        }
+
+        // Positioning can either be a % of the offset or an absolute from it
+        if (dimensions.x.percent) {
+          new_dimensions.x = parseInt(x_offset) * (parseFloat(dimensions.x.percent) / 100);
+        } else if (dimensions.x.offset) {
+          new_dimensions.x = parseInt(x_offset) + parseInt(dimensions.x.offset);
+        } else {
+          new_dimensions.x = dimensions.x;
+        }
+
+        break;
+
+      // Y axis
+      case 'y':
+
+        // We always want to reference from the primary displays location
+        y_offset = screen_dimensions.y;
+
+        // If defined also reference relative to the screen height
+        if (dimensions.y.relative) {
+          y_offset = screen_dimensions.height;
+        }
+
+        // Positioning can either be a % of the offset or an absolute from it
+        if (dimensions.y.percent) {
+          new_dimensions.y = parseInt(y_offset) * (parseFloat(dimensions.y.percent) / 100);
+        } else if (dimensions.x.offset) {
+          new_dimensions.y = parseInt(y_offset) + parseInt(dimensions.y.offset);
+        } else {
+          new_dimensions.y = dimensions.y;
+        }
+
+        break;
+
+
+      default:
+        // We don't have custom rules for anything else so just set them arbitrarily
+        new_dimensions[dimension] = dimensions[dimension];
+        break;
+
+    }
+  }
+
+  // Send back the new values for use
+  return new_dimensions;
+
+}
