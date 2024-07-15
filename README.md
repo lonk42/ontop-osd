@@ -24,6 +24,7 @@ The config file is provided as JSON and exposes the following arguments:
     * `write_file`: Create a file, see `write_file_path` for scoping destination
     * `filename`: Name of the file to create with `write_file` method
 * `write_file_path`: Directory to be used when invoking `write_file` IPC function
+* `quit`: Close the electron application
 * `startup_functions`: IPC to run from node to the OS when its started
   * `condition`: Only run the function if your condition matches
   * `check_current_user`: Returns true is the OSD is run by specified `user`
