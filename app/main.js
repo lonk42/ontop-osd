@@ -11,7 +11,6 @@ app.whenReady().then(() => {
   if (! config_file_path) {
     console.log("Usage: " + app.getName() + ' --config=""');
     process.exit(-1);
-    //config_file_path = "../examples/example.config.json"
   }
 
   // Read the config file
@@ -53,7 +52,6 @@ app.whenReady().then(() => {
 
   // Spawn the app
   createWindow(screen_dimensions, app_config);
-
   app.on('activate', () => {if (BrowserWindow.getAllWindows().length === 0) {createWindow();}});
 
 });
@@ -68,7 +66,7 @@ const createWindow = (screen_dimensions, app_config) => {
     height: 500,
     y: 0,
     x: 0,
-    resizable: false,
+    resizable: true,
     focusable: false,
     transparent: true,
     frame: false,
@@ -101,6 +99,12 @@ const createWindow = (screen_dimensions, app_config) => {
   // We need to do this to avoid "unclickable" invisible space on the screen
   ipcMain.on('changeRegion', function(event, data) {
     win.setBounds(TranslateScreenDimensions(data.data));
+  });
+
+  // Prevent new windows from being opened
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    console.log("WARNING: Blocked attempt to open new window '" + url + "'");
+    return { action: 'deny' };
   });
 
   win.webContents.once('did-finish-load', () => {

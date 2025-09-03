@@ -24,7 +24,6 @@ The config file is provided as JSON and exposes the following arguments:
     * `write_file`: Create a file, see `write_file_path` for scoping destination
     * `filename`: Name of the file to create with `write_file` method
 * `write_file_path`: Directory to be used when invoking `write_file` IPC function
-* `quit`: Close the electron application
 * `startup_functions`: IPC to run from node to the OS when its started
   * `condition`: Only run the function if your condition matches
   * `check_current_user`: Returns true is the OSD is run by specified `user`
@@ -45,14 +44,25 @@ The config file is provided as JSON and exposes the following arguments:
 ```bash
 npm install
 ```
-3. Ensure packging dependencies are installed (each OS will have different requirements here):
+3. Package the application
+
+a) DEB
 ```bash
 dnf install jq fakeroot
 apt-get install build-essential jq dpkg-dev
 npm install -g electron-packager electron-installer-debian
-```
-4. Build the package:
-```bash
+
 electron-packager . --platform linux --arch x64 --out dist/
 electron-installer-debian --src dist/ontop-osd-linux-x64/ --dest dist/installers/ --arch amd64
+```
+
+a) RPM
+```bash
+dnf install jq fakeroot
+apt-get install build-essential jq
+npm install -g electron-builder
+
+cd app/
+npm install
+electron-builder build
 ```

@@ -3,7 +3,11 @@
     <head>
         <link rel="stylesheet" href="../app/font-awesome/css/font-awesome.min.css">
         <style>
-            .fa-2x { font-size: 2em; }
+            .global {
+                -webkit-app-region: no-drag;
+		-webkit-user-select: none;
+	    }
+	    .fa-2x { font-size: 2em; }
             .fa {
                 position: relative;
                 display: flex;
@@ -57,7 +61,16 @@
             .osd_close_icon:hover {
                 background: rgb(100, 100, 100);
             }
-            .osd_out {
+	    .osd_move_icon {
+                background-color: rgb(50, 50, 50);
+                color: #EEE;
+		-webkit-app-region: drag;
+	    }
+	    .osd_move_icon:hover {
+                background: rgb(100, 100, 100);
+		cursor: grab;
+	    }
+	    .osd_out {
                 right: 0px !important;
             }
             .hide_panel {
@@ -107,7 +120,7 @@
             }
         </style>
     </head>
-    <body style="margin: 0;">
+    <body style="margin: 0;" class="global">
         <!-- New session picker -->
         <div class="session_container" id="session_container" onmouseleave="ToggleAddSession(true);">
             <div class="session_picker">
@@ -122,33 +135,34 @@
             </div>
         </div>
         <!-- Slide out OSD -->
-        <nav class="osd" id="osd" onmouseleave="ToggleOSD(false)" onmouseenter="ToggleOSD(true)">
+	<nav class="osd" id="osd" onmouseleave="ToggleOSD(false)" onmouseenter="ToggleOSD(true)">
             <ul>
-                <!-- Add Session -->
                 <li id="button_add_session">
                     <span onclick="ToggleOSD();ToggleAddSession(false); return false">
                         <i class="fa fa-tv fa-2x"></i><span class="label">Add Session</span>
                     </span>
                 </li>
 
-                <!-- Settings -->
                 <li>
                     <span onclick="ToggleOSD();InvokeIPC('button_add_session', data = 'diag');return false;">
                         <i class="fa fa-cog fa-2x"></i><span class="label">Settings</span>
                     </span>
                 </li>
 
-                <!-- Hide/Close -->
                 <li>
-                    <span style="width: 180px;" onclick="HideOSD();ToggleOSD();return false;">
+                    <span style="width: 140px;" onclick="HideOSD();ToggleOSD();return false;">
                         <i id="button_hide_icon" class="fa fa-angle-double-right fa-2x"></i><span id="button_hide_label" class="label">Hide</span>
                     </span>
-                    <span style="width: 40px;" onclick="InvokeIPC('quit');return false;">
+
+		    <span style="width: 40px;">
+			<i class="fa fa-arrows fa-2x osd_move_icon"></i>
+                    </span>
+
+		    <span style="width: 40px;" onclick="InvokeIPC('quit');return false;">
                         <i class="fa fa-window-close fa-2x osd_close_icon"></i>
                     </span>
                 </li>
 
-                <!-- Sign Out -->
                 <li id="button_exit">
                     <span onclick="ToggleOSD();InvokeIPC('button_exit');return false;">
                         <i class="fa fa-sign-out fa-2x"></i><span class="label">Sign out</span>

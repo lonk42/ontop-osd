@@ -1,14 +1,31 @@
 {
   "name": "ontop-osd",
-  "version": "1.2.0",
+  "version": "1.3.2",
   "description": "An always ontop OSD",
   "main": "main.js",
   "scripts": {
     "start": "electron main.js"
   },
-  "author": "OnTheLink",
+  "author": {
+    "name": "OnTheLink",
+    "email": "github@onthelink.net",
+    "url": "https://github.com/lonk42/ontop-osd"
+  },
   "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/lonk42/ontop-osd",
   "devDependencies": {
-    "electron": "^26.2.0"
+    "electron": "^37.4.0"
+  },
+  "build": {
+    "productName": "OnTop OSD",
+    "linux": {
+      "target": "rpm"
+    },
+    "rpm": {
+      "fpm": [
+        "--rpm-rpmbuild-define", "_build_id_links none"
+      ]
+    },
+    "extraResources": ["font-awesome/**"]
   }
 }
